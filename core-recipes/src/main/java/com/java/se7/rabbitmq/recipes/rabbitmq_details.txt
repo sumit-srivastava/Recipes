@@ -1,0 +1,35 @@
+Install
+=======
+http://www.rabbitmq.com/install-debian.html
+
+Managing the Broker
+===================
+To stop the server or check its status, etc., you can invoke rabbitmqctl (as an administrator)
+
+==> Invoke rabbitmqctl stop to stop the server.
+==> Invoke rabbitmqctl status to check whether it is running.
+
+Examples:
+1. sudo rabbitmqctl status
+2. sudo rabbitmqctl list_queues
+3. sudo service rabbitmq-server restart
+
+
+Logging
+=======
+/var/log/rabbitmq
+
+
+API Details
+===========
+Checking whether a queue already exists
+-----------------------------------------
+a. channel.queueDeclare()
+b. channel.queueDeclarePassive()
+
+The behavior of the two methods is the same
+in case the queue already exists; but in case it doesn't, the first one will silently create it and
+return back (that's actually the most frequently used case), the latter will raise an exception.
+
+
+

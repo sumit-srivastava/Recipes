@@ -1,0 +1,28 @@
+package lambdas;
+
+Functional Interface
+======================
+
+Remember the interface Predicate<T> you created so you could parameterize the behavior of the filter method? It’s a functional interface! Why? Because Predicate specifies only one abstract method:
+
+public interface Predicate<T>{
+    boolean test (T t);
+}
+
+In a nutshell, a functional interface is an interface that specifies exactly one abstract method. You already know several other functional interfaces in the Java API such as Comparator and Runnable.
+
+Interfaces can now also have default methods (that is, a method with a body that provides some default implementation for a method in case it isn’t implemented by a class). An interface is still a functional interface if it has many default methods as long as it specifies only one abstract method.
+
+What can you do with functional interfaces? Lambda expressions let you provide the implementation of the abstract method of a functional interface directly inline and treat the whole expression as an instance of a functional interface (more technically speaking, an instance of a concrete implementation of the functional interface). 
+
+
+
+Function descriptor
+====================
+
+The signature of the abstract method of the functional interface essentially describes the signature of the lambda expression. We call this abstract method a function descriptor. For example, the Runnable interface can be viewed as the signature of a function that accepts nothing and returns nothing (void) because it has only one abstract method called run, which accepts nothing and returns nothing (void).
+
+If you explore the new Java API, you’ll notice that functional interfaces are annotated with @FunctionalInterface. This annotation is used to indicate that the interface is intended to be a functional interface. The compiler will return a meaningful error if you define an interface using the @FunctionalInterface annotation and it isn’t a functional interface.
+
+
+

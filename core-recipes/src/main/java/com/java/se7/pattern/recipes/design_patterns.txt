@@ -1,0 +1,26 @@
+Design Patterns
+################################################################################
+
+
+Observer design Pattern
+=================================Start=========================================
+Observer design pattern in Java is a fundamental core Java pattern where Observer watch for any change in state or property of Subject.
+
+For Example If there is any change in policy of Company, Company notifies all its Shareholders or Observers.
+Here Company is Subject and Shareholders are Observers.
+
+
+Problem which is solved by Observer Pattern
+--------------------------------------------------------------------------------
+If we have requirement that if particular object changes its state and depending upon this change some or group of objects automatically
+change their state also, we need to implement observer pattern. It will reduce coupling between objects.
+
+
+Real World Example
+--------------------------------------------------------------------------------
+When we subscribe for New Phone connection, whenever customer is registered with that company all other departments are notified accordingly
+and then depending upon the state they do their jobs like do the verification of their address then if customer state is verified then dispatch the welcome kit etc.
+
+=================================End===========================================
+
+

@@ -1,0 +1,1007 @@
+Special Methods & Tags for Servlet & JSP
+========================================
+
+1. Wanna access the servlet name within your own code - getServletName()
+------------------------------------------------------------------------
+
+There is a getServletName() method defined in the ServletConfig interface
+(which is implemented by GenericServlet, so any inheriting servlet will have 
+the method available). 
+
+ex: print the servlet name on the server console:
+
+protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+{
+	System.out.println(this.getServletName());
+}
+
+
+2. To get at the following initialization information - 
+-------------------------------------------------------
+
+<init-param>
+	<description>The number of months ahead to predict: default value</description>
+	<param-name>months</param-name>
+	<param-value>3</param-value>
+</init-param>
+<init-param>
+	<description>How wild to make the prediction: default adjective</description>
+	<param-name>wildness</param-name>
+	<param-value>exaggerated</param-value>
+</init-param>
+
+two servlet methods (originating from the ServletConfig interface, implemented in the GenericServlet class)
+
+getInitParameterNames():-  returns an Enumeration of all the parameter names available to the servlet.
+--------------------------
+
+getInitParameter(String paramName):- to return an individual parameter value.
+------------------------------------
+
+ex:
+protected void doGet(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException 
+{
+	/* Local variables to hold parameter values */
+	int months = 0;
+	String wildness = "";
+	/* Iterate through all the initialization parameters */
+	Enumeration e = getInitParameterNames();
+	while (e.hasMoreElements()) 
+	{
+		String parmName = (String) e.nextElement();
+		if (parmName.equals("months")) 
+		{
+			months = Integer.parseInt(getInitParameter(parmName));
+		}
+		if (parmName.equals("wildness")) 
+		{
+			wildness = getInitParameter(parmName);
+		}
+	}
+	/* Return a page showing the values discovered */
+	response.setContentType("text/plain");
+	PrintWriter out = response.getWriter();
+	out.write("Intialization parameters were 'months' with a value of "
+	+ months + ' and 'wildness' with a value of '" + wildness + "'");
+}
+
+
+<load-on-startup> - A web container’s usual practice is to load a servlet at the point where it is first accessed.
+However, by defining the <load-on-startup> element, the servlet is loaded at the point when the web container starts.
+you can control the order in which servlets load by the integers you specify as the values of the <load-on-startup> tags:
+
+
+<error-page> - 
+
+<web-abb>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/customErrorPage.html</location> -- The resource specified in <location> must start with a “/.” The path described is from the context root.
+	</error-page>
+</web-app>
+
+<location> must begin with a “/,” whereas those in <welcome-file> must not begin with a “/.” Neither should end with a “/,”
+----------------------------------------------------------------------------------------------------------------------------
+
+HTTP status codes are not the only error page mechanism at your disposal. You can also map plain old Java exceptions
+to particular error pages.
+
+<web-abb>
+	<error-page>
+		<exception-type>javax.servlet.ServletException</exception-type>
+		<location>/customErrorPage.html</location>
+	</error-page>
+</web-app>
+
+If you have a servlet that happens to throw a ServletException at runtime, the web
+container will return the custom error page as specified.
+
+
+Packaging Your Web Application:
+-------------------------------
+
+jar cvf0 mywarfile.war *.* 
+This creates a WAR file called mywarfi le.war in the context directory, containing all the fi les in the context directory and any subdirectories.
+
+Unpackaging Your Web Application:
+----------------------------------
+
+jar xvf mywebapp.war
+
+
+
+ServletContext: 
+---------------
+The ServletContext most closely represents the web application itself, provides a set of services for the web application 
+to work with the web container.
+
+ServletContext Initialization Parameters:
+-----------------------------------------
+
+<web-app>
+	<context-param>
+		<param-name>machineName</param-name>
+		<param-value>GERALDINE</param-value>
+	</context-param>
+	<context-param>
+		<param-name>secretParameterFile</param-name>
+		<param-value>/WEB-INF/xml/secretParms.xml</param-value>
+	</context-param>
+</web-app>
+
+To Retrieve ServletContext Initialization Parameters:
+-----------------------------------------------------
+
+ServletContext sc = getServletContext();
+String database = sc.getInitParameter("machineName");
+String secret = sc.getInitParameter("secretParameterFile");
+out.write("<BR />The machine name is: " + database);
+out.write("<BR />The secret parameter file is: " + secret);
+
+To recover the names of all the parameters set up for the Servlet Context:
+--------------------------------------------------------------------------
+
+ServletContext sc = getServletContext();
+Enumeration e = sc.getInitParameterNames();
+while (e.hasMoreElements()) 
+{
+	String paramName = (String) e.nextElement();
+	out.write("<BR />Parameter name <B>" + paramName + "</B> has the value <I>" + sc.getInitParameter(paramName) + "</I>");
+}
+
+getInitParameter(String parmName) hands back a null String reference if the parameter is not recognized &
+getInitParameterNames() hands back an empty Enumeration (i.e., a non-null).What you
+don’t get is any kind of exception being thrown from these methods.
+
+
+public void removeAttribute(String name):- Removes the named attribute.
+------------------------------------------
+
+Although there is a removeAttribute(String name) method, you don’t necessarily
+need it. A call such as this to setAttribute() has the same effect:
+
+scopeinstance.setAttribute("com.myco.attrname", null);
+
+Path for incoming request:
+http://localhost:8080/mywebapp/AnotherServlet
+
+Fetching path:-
+---------------
+public class AnotherServlet extends HttpServlet 
+{
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+	{
+		String servletPath = request.getServletPath();
+		System.out.println("The servlet path is: " + servletPath);
+	}
+}
+
+The servlet path is: /AnotherServlet
+
+forward():- the control is forwarded to another sevlet or jsp.
+-----------
+
+When you forward to another servlet, you might be tempted to think that control never returns to the servlet you are forwarding from.
+Not so. Consider the following code, where ServletA forwards to ServletB, but there is code following the forward() method in ServletA:
+
+public class ServletA extends HttpServlet 
+{
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)	throws ServletException, IOException 
+	{
+		String fwdPath = “/ServletB”;
+		RequestDispatcher rd = request.getRequestDispatcher(fwdPath);
+		rd.forward(request, response);
+		System.out.println(“Back in ServletA”);
+	}
+}
+
+public class ServletB extends HttpServlet 
+{
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)	throws ServletException, IOException 
+	{
+		System.out.println(“Now in ServletB”);
+	}
+}
+
+When you call ServletA, the output to the server console (note: not the response/web pages!) is as follows:
+Now in ServletB
+Back in ServletA
+
+What you can’t do in ServletA—after the forward call—is anything that might attempt to affect the response. Well, you
+can do it—and the lines of code will execute harmlessly, having no effect.
+
+But code that does things unrelated to the response (such as outputting text to the console, setting attributes, and writing to logs) will
+execute as normal.
+
+
+
+Filter:-
+--------
+
+list of the uses:
+
+1. Authentication filters
+2. Logging and auditing filters
+3. Image conversion filters
+4. Data compression fi lters
+5. Encryption fi lters
+6. Tokenizing fi lters
+7. Filters that trigger resource access events
+8. XSL / T fi lters that transform XML content
+9. MIME-type chain filters
+10. Caching filters
+
+
+<filter-mapping>
+	<filter-name>	Always 1
+	<url-pattern> OR <servlet-name> Always 1
+	<dispatcher>	0 to 4 Valid values:REQUEST, FORWARD, INCLUDE, ERROR
+	
+<dispatcher>—is optional; when you leave it out, though, it’s equivalent to explicitly stating <dispatcher>REQUEST</dispatcher>.
+When you supply a <dispatcher> value, you are giving permission for a filter to trigger for the route specified.
+
+
+<filter>
+	<filter-name>LogFilter</filter-name>
+	<filter-class>com.osborne.LogFilter</filter-class>
+</filter>
+<filter>
+	<filter-name>AuthorizationFilter</filter-name>
+	<filter-class>com.osborne.AuthorizationFilter</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>LogFilter</filter-name>
+	<url-pattern>/</url-pattern>
+</filter-mapping>
+<filter-mapping>
+	<filter-name>AuthorizationFilter</filter-name>
+	<url-pattern>/</url-pattern>
+</filter-mapping>
+
+
+Which will run first? That’s determined by the order of <filter-mapping> declarations in the deployment descriptor.
+
+A fi lter chain can be reshuffl ed fairly easily by moving entries up or down in the deployment descriptor. 
+You can easily insert additional fi lters at a later stage, without any programming required.
+
+Wrappers with Filters - Chapter 3
+
+Why?
+ServletA - doFilter --> forward() to ServletB --> out.println()
+ServletB  -->  out.println() --> out.close() --> after closing, ServletA's out.println() statements after forward() wont have any effect.
+
+
+
+HttpSession.invalidate():- This invalidates the session and then removes any attributes associated with the session.
+--------------------------
+
+getCreationTime():— the time the session was created.
+-------------------
+
+getLastAccessedTime():—the last time the client sent a request associated with the session.
+-----------------------
+
+
+JSESSIONID:-
+------------
+
+When the Cookie is disabled:
+
+URL Rewriting: jsessionid is placed in the URL between the servlet name (with path information, if present) and the query string.
+
+http://localhost:8080/examp0401/SessionExample;jsessionid=
+58112645388D9380808A726A27F92997?name=value&othername=othervalue
+
+Every web page your application returns in the response is likely to have a number of hyperlinks within it
+of one sort or other—regular links, buttons, image links, or whatever. Each one of these links must contain 
+jsessionid=<correctLongString> as part of the URL.
+
+There is a method—HttpServletResponse.encodeURL()—
+which accepts a String (representing the URL link on the web page minus session
+information) and returns a String (the same URL link, but now with the session
+information embedded).
+
+HttpServletResponse .encodeRedirectURL(), which operates in pretty much the same way as encodeURL(). 
+You give it a URL String; it gives back a URL String, with jsessionid
+embedded where necessary. This resulting URL String should then be used to plug
+into the HttpServletResponse.sendRedirect() method.
+
+
+There are a couple of HttpServletRequest methods that identify which of the two
+===============================================================================
+standard session mechanisms are in use—cookies or URL rewriting.
+================================================================
+
+1. HttpServletRequest.isRequestedSessionIdFromCookie()
+2. HttpServletRequest.isRequestedSessionIdFromURL()
+
+There can be circumstances where both of these methods, called consecutively
+for the same request, both return false—even though a session is present. This
+will happen:
+
+--> for SSL sessions.
+--> for bespoke session mechanism logic (hidden form fi elds, for example).
+--> when the session is new! Because at this point, the session ID isn’t coming from a
+    URL or a cookie—but it has been generated by the web container.
+	
+
+Listeners:-
+===========
+
+Listener Interface Name				Applies to 				Function
+
+ServletRequestListener				Request objects			Responds to the life and death of each request.
+
+ServletContextListener				The context object		Responds to the life and death of the context for a web application.
+
+ServletRequestAttributeListener 	Request objects 		Responds to any change to the set of attributes attached to a request object.
+
+ServletContextAttributeListener 	The context object 		Responds to any change to the set of attributes attached to the context object.
+
+
+
+How to use Listeners in the web application:-
+==============================================
+
+There are two things you need to do to set up a listener in a web application:-
+--------------------------------------------------------------------------------
+1. Write a class that implements the appropriate listener interface.
+2. Register the class name in the web application deployment descriptor, web.xml.
+	
+	place a <listener> element somewhere underneath the root element, and with this embed a <listener-class> element.
+	
+e.g. 
+<listener>
+	<listener-class>com.osborne.RequestTrackingListener</listener-class>
+</listener>
+<listener>
+	<listener-class>com.osborne.SessionLoggingListener</listener-class>
+</listener>
+
+
+You might care about the order in which the classes are called when a triggering event occurs. 
+Simply list your listener declarations in the desired order in the deployment descriptor.
+
+Listener classes must have a no-argument constructor. The web container is going to instantiate your
+listener only through the no-argument constructor.
+
+Now one by one:
+1. The Request Listener: ServletRequestListener
+------------------------------------------------
+
+A class implementing this interface has two methods to implement: requestInitialized() and requestDestroyed().
+
+requestInitialized() : called at the beginning of any request’s scope.
+		
+This is at the beginning of a servlet’s service() method—or earlier than that if a filter
+chain is involved (the request’s scope begins at the first doFilter() method call of the chain).
+
+requestDestroyed() : either at the end of the servlet’s service() method or at the end of the
+doFilter() method for the first filter in a chain.
+
+Each of these ServletRequestListener methods accepts a ServletRequestEvent as a
+parameter. This event object has two methods for access to useful objects:
+1. getServletContext() returns the ServletContext for a web application.
+2. getServletRequest() returns the ServletRequest object itself (cast this to HttpServletRequest if you need to).
+
+You write code like the following in your ServletRequestListener class to preload an
+attribute into every request made to your web application:
+
+public void requestInitialized(ServletRequestEvent requestEvent) 
+{
+	HttpServletRequest request = (HttpServletRequest)requestEvent.getServletRequest();
+	request.setAttribute("com.osborne.bookrecommendation", "Core JSPs 2.0");
+}
+
+
+
+2. The Request Attribute Listener:-
+------------------------------------
+
+classes that implement the Servlet RequestAttributeListener interface. Here are the methods to implement:
+
+1. attributeAdded(ServletRequestAttributeEvent srae) : called whenever a new attribute is added to any request. 
+                                                       In other words, any call to ServletRequest.setAttribute() will trigger a call to this method.
+
+2. attributeRemoved(ServletRequestAttributeEvent srae) : called whenever an attribute is removed from a request (as a result of any call to
+														 ServletRequest.removeAttribute()).
+														 
+3. attributeReplaced(ServletRequestAttributeEvent srae) : called whenever an attribute is replaced (as a result of any call to ServletRequest.setAttribute() 
+														  for an attribute name already in use on the request whose call this is).
+
+Again, there are two useful methods on the event object passed as a parameter to these methods.
+
+getName() : It returns the String holding the name of the attribute being added, removed, or replaced.
+getValue() : is less clear-cut, for what’s returned varies slightly in meaning:
+
+attributeAdded(), getValue() returns the Object that is the value parameter on the setAttribute() call.
+attributeRemoved(), getValue() returns the Object that has been removed as a value from the request as a result of a removeAttribute() call.
+attributeReplaced(), getValue() returns the old value of the attribute before a call to setAttribute() changed it. Ok, but how to get new value?
+
+Because ServletRequestAttributeEvent inherits from ServletRequestEvent, you get the two handy methods of ServletRequestEvent also which allow you 
+to get the context object and the request object.
+
+Having the request object, you can always get to the current value of an attribute that’s just been replaced. Here’s some code
+that displays to the server console the old and new values for a replaced attribute:
+
+public void attributeReplaced(ServletRequestAttributeEvent event) 
+{
+	String name = event.getName();
+	Object oldValue = event.getValue();
+	Object newValue = event.getServletRequest().getAttribute(name);
+	System.out.println("Name of attribute: " + name);
+	System.out.println("Old value of attribute: " + oldValue);
+	System.out.println("New value of attribute: " + newValue);
+}
+
+The “grandparent” of ServletRequestEvent is java.util.EventObject. This has one method—getSource()—which returns the object
+that is the source of the event. 
+i.e. ServletContext object:It represents the web application framework, which is, ultimately, the source of all events.
+
+
+3. The Context Listener :
+Instead of requestInitialized() and request Destroyed(), you have contextInitialized() and contextDestroyed() as the two methods to implement.
+And in life cycle terms, these are called at the beginning and end of scope. 
+The context life cycle matches that of the web application: It’s the first object made available on web application startup and the last to 
+disappear at shutdown.
+
+contextInitialized() : gets called before any servlet’s init() method or any filter’s doFilter() method.
+contextDestroyed() : every filter and servlet destroy() method must have executed before the contextDestroyed() method is called.
+
+Both the methods get passed a ServletContextEvent object, which just has the one method, getServletContext(), to get at the context object itself. 
+So in contextInitialized(), you have a chance to attach context attributes before any servlet gets a crack of the whip.
+
+4. The Context Attribute Listener:-
+-----------------------------------
+The ServletContextAttributeListener has the same trio of methods as the Servlet RequestAttributeListener: namely attributeAdded(), 
+attributeRemoved(), and attributeReplaced().
+
+They have the same function as their request equivalents— except, of course, that they fi re when things happen to context attributes.
+1. attributeAdded(ServletContextAttributeEvent scae)
+2. attributeRemoved(ServletContextAttributeEvent scae).
+3. attributeReplaced(ServletContextAttributeEvent scae)
+
+the ServletContextAttributeEvent received as a parameter by these methods has the same two methods as the equivalent ServletRequest
+AttributeEvent—namely getName() (to get the name of the attribute affected) and getValue() (to get the value of the attribute: added, removed,
+or—in the case of replacement—the old value of the attribute).
+
+
+
+Session Listeners:-
+-------------------
+
+Sessions have two listeners.
+----------------------------
+1. HttpSessionListener, which is very like ServletContextListener and ServletRequestListener.
+-----------------------
+2. HttpSessionAttributeListener, which is very like ServletContextAttributeListener and ServletRequestAttributeListener.
+--------------------------------
+
+But there are also a couple of extra listeners related to sessions—or more correctly, session attribute value objects.
+----------------------------------------------------------------------------------------------------------------------
+
+Session-Related Listeners: Session-Related Listeners Not Declared in the Deployment Descriptor.
+-----------------------------------------------------------------------------------------------
+
+1. HttpSessionBindingListener receives events when a value object is used as a session attribute.
+-----------------------------
+2. HttpSesssionActivationListener receives events when a value object is transported across JVMs. 
+---------------------------------
+   This happens when the object is an attribute of a session in a distributed environment.
+   
+
+HttpSessionListener : HttpSessionListener has two methods, like its request and context counterparts and again these fire at the beginning 
+--------------------- and end of scope. HttpSessionListener must be set up in the deployment descriptor.
+1. sessionCreated(HttpSessionEvent event) : called by the web container the moment after a request first calls the getSession() method—in other words,
+-------------------------------------------	whenever a new session is provided not for subsequent calls to HttpServletRequest.getSession().
+
+	HttpSessionEvent: This has only the one method of its own, which is getSession()—to return the HttpSession object that has just been created.
+	-----------------
+	
+2. sessionDestroyed(HttpSessionEvent event):- called by the web container at the moment a session is about to be invalidated—within
+--------------------------------------------  the call to HttpSession.invalidate(), but before the session becomes invalid and unusable.
+											  Whether the call to HttpSession .invalidate() comes about as a result of your own explicit call, or 
+											  the web container timing out a session, the effect is the same: The sessionDestroyed() method will fire.
+											  
+
+HttpSessionAttributeListener:-
+------------------------------
+HttpSessionAttributeListener is just like ServletRequestAttributeListener. Here are the methods to implement:
+1. attributeAdded(HttpSessionBindingEvent hsbe) : called whenever a new attribute is added to any session.
+2. attributeRemoved(HttpSessionBindingEvent srae) : called whenever an attribute is removed from any session.
+3. attributeReplaced(HttpSessionBindingEvent srae) : called whenever an attribute is replaced (as a result of any call to HttpSession
+													 .setAttribute() for an attribute name already in use on the session whose call this is).
+													 
+Again, HttpSessionBindingEvent has two methods getName() and getValue() methods.
+
+
+Session-Related Listeners : Classes implementing these listener interfaces are not declared in the deployment descriptor.
+---------------------------
+a. HttpSessionBindingListener:- It’s implemented by an object you intend to use as the “value” parameter in a call to
+-------------------------------	HttpSession.setAttribute(String name, Object value).
+								
+								HttpSessionBindingListener class has methods that are called only on the individual object being 
+								used as a session attribute.
+								
+	The methods are: 
+	1. valueBound(HttpSessionBindingEvent hsbe):- called whenever the object implementing the interface is the value object passed to 
+	--------------------------------------------- an HttpSession.setAttribute() call.
+					
+	2. valueUnbound(HttpSessionBindingEvent hsbe):- called whenever the object implementing the interface is removed from the session 
+	----------------------------------------------- as a result of an HttpSession.removeAttribute() call.
+													
+
+Demo:-
+------
+
+public class SessionAttrObject implements HttpSessionBindingListener
+{
+	private String data;
+	public SessionAttrObject(String value) 
+	{
+		data = value;
+	}
+	public String getData() {return data;}
+	public String toString() {return data;}
+	public void setData(String data) 
+	{
+		this.data = data;
+	}
+	public void valueBound(HttpSessionBindingEvent event) 
+	{
+		System.out.println("valueBound() call on object " + getData());
+	}
+	public void valueUnbound(HttpSessionBindingEvent event) 
+	{
+		System.out.println("valueUnbound() call on object " + getData());
+	}
+}
+
+	Let’s now consider some servlet code that adds, replaces, and removes session
+	attributes—some of whose values are of type SessionAttrObject:
+											  
+11 SessionAttrObject boundObject1 = new SessionAttrObject("Prometheus1");
+12 SessionAttrObject boundObject2 = new SessionAttrObject("Prometheus2");
+13 HttpSession session = request.getSession();
+14 session.setAttribute("bound", boundObject1);
+15 session.setAttribute("bound2", boundObject2);
+16 session.setAttribute("nonBound", "Icarus");
+17 session.setAttribute("bound", boundObject2);
+18 session.setAttribute("bound", null);
+19 session.removeAttribute("bound2");
+20 session.removeAttribute("nonBound");
+
+
+The output when we execute this code (on the console) looks something like this
+
+01 >B>B> valueBound() called for object Prometheus1
+02 >B>B> valueBound() called for object Prometheus2
+03 >B>B> valueBound() called for object Prometheus2
+04 >U>U> valueUnbound() called for object Prometheus1
+05 >U>U> valueUnbound() called for object Prometheus2
+06 >U>U> valueUnbound() called for object Prometheus2
+
+
+b. HttpSessionActivationListener:- It’s also implemented by an object. However, the event methods that might be called have nothing to do 
+---------------------------------- with the addition, replacement, or removal of the attributes themselves.
+								  
+The methods are called in distributed environments, at the point where a session is moved from one JVM to another.
+In the source JVM, all objects bound to the session need to be serialized, and—of course—deserialized in the JVM that is 
+the destination for the moved session.
+
+The methods are :
+
+1. sessionWillPassivate(HttpSessionEvent hse):- called on each implementing object bound to the session just prior to the serialization 
+-----------------------------------------------	of the session (and all its attributes).
+												
+2. sessionDidActivate(HttpSessionEvent hse):- called on each implementing object bound to the session just after deserialization of the session 
+--------------------------------------------- (and all its attributes).
+											  
+
+											  
+											  
+											  
+JSP:-
+=====
+
+If you want to suppress direct access to a JSP (so that users have to go
+through a registered name and a servlet mapping), locate the JSP page
+under WEB-INF.
+
+<servlet>
+	<servlet-name>JspName1</servlet-name>
+	<jsp-file>/instanceCheck.jsp</jsp-file>
+</servlet>
+<servlet-mapping>
+	<servlet-name>JspName1</servlet-name>
+	<url-pattern>/jspName1</url-pattern>
+</servlet-mapping>
+<servlet>
+	<servlet-name>JspName2</servlet-name>
+	<jsp-file>/instanceCheck.jsp</jsp-file>
+</servlet>
+<servlet-mapping>
+	<servlet-name>JspName2</servlet-name>
+	<url-pattern>/jspName2</url-pattern>
+</servlet-mapping>
+
+You can register a JSP page in the same way as a servlet. You even use the <servlet> element, with
+one vital difference—where the <servlet-class> would appear, you substitute <jsp-file> instead.
+
+This is the normal way, which ignores any registration details—just use the name of the JSP itself:
+
+http://localhost:8080/examp0601/instanceCheck.jsp
+
+Alternatively, You can use the servlet mapping corresponding to the first registered name for the JSP page, JSPName1:
+
+http://localhost:8080/examp0601/jspName1
+
+
+The JSP Translation Phase:-
+============================
+You deploy a JSP page into a JSP container (servlet containers such as Tomcat).
+The JSP container has mechanisms that “translate” the page into something we do recognize as Java code: namely, a servlet.
+
+The translation occurs only when necessary, at some point before a JSP page has to serve its first request. 
+Translation doesn’t have to happen again—unless the JSP source code is updated and the page redeployed.
+
+JSP source code --> Syntax checking --> Code generation --> Generated servlet source code --> Compilation --> Compiled servlet class
+------------------------------------------------------------------------------------------------------------------------------------
+
+The servlet created isn’t just any old servlet—it has some special characteristics.
+
+--> The servlet (or one of its superclasses) must implement the javax.servlet.jsp.HttpJspPage interface, or . . .
+--> of non-HTTP, the servlet (or one of its superclasses) must implement the javax.servlet.jsp.JspPage interface.
+
+
+JSP Elements:-
+--------------
+There are three types of element possible in a JSP page:
+1. Directive elements: You most often use these to communicate global information to your page, which is independent of any particular request.
+----------------------
+2. Action elements: These use XML-style tags for the inclusion of dynamic data.
+-------------------
+3. Scripting elements: The purpose is to incorporate dynamic information or execute presentation logic.
+----------------------
+					   There are four in all:
+					   1. expressions : exploit Java code to place some output directly in the JSP page. e.g <%= new Date() %>.
+					   2. scriptlets: for more extended pieces of Java code, works in the context of the _jspService() method. 
+					                  e.g. <% System.out.println("in the jspService() method"); %>
+					   3. declarations:for any piece of Java code that needs to exist in the generated servlet but outside the _jspService() method.
+									    e.g. <%! public void jspInit() { // Do nothing } %>.
+										
+					   4. comments : Example: <%-- Author: David Bridgewater --%>.
+					   
+					   
+Example of Scriptlets:
+
+<html>
+	<head><title>The Planets</title></head>
+	<body>
+		<% /* Scriptlet 1 */
+		String[] planets = {"Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"};
+		%>
+		<table>
+		<tr><th><b>The Planets—in order by distance from the Sun</b> </th></tr>
+		<% for (int i = 0; i < planets.length; i++) /* Scriptlet 2 */
+		{ 
+			if (i == 3) 
+			{ 
+				// fourth rock from the sun %>
+				<tr><td><font color="red"><%=(planets[i] + ", the red planet").toUpperCase()%></font></td></tr>
+		<%  } 
+			else 
+			{ 
+				/* Scriptlet 3 */ %>
+				<tr><td><%= planets[i] %></td></tr>
+		<%  } /* Scriptlet 4 */
+		} %>
+</table></body></html>
+
+Output:
+The Planets—in order by distance from the Sun
+Mercury
+Venus
+Earth
+MARS THE RED PLANET
+Jupiter
+Saturn
+Uranus
+Neptune
+Pluto
+
+
+
+Example of Declarations:
+
+<%
+String userInput = (String) request.getParameter("sentence");
+if (userInput == null) 
+{
+	userInput = "Antidisestablishmentarianism rules OK";
+}
+%>
+<html>
+	<head><title>Sentence Analyzer</title></head>
+	<body>
+	<p>Type in a sample sentence to analyze:</p>
+	<form method="GET" action="sentenceAnalyzer.jsp">
+	<input size="80" name="sentence" type="text" value="<%= userInput %>" />
+	<br />
+	<input type="submit" />
+	</form>
+	<p>Average length of word is <%=avgWordLength(userInput)%>.</p>
+	</body>
+</html>
+<%!
+private double avgWordLength(String sentence) 
+{
+	java.util.StringTokenizer st = new java.util.StringTokenizer(sentence, " ");
+	double wordCount = st.countTokens();
+	int totalChars = 0;
+	while (st.hasMoreTokens()) 
+	{
+		totalChars += st.nextToken().length();
+	}
+	return totalChars / wordCount;
+}
+%>
+
+
+
+Directives:
+
+1. The page Directive: You can include a page directive anywhere in your JSP page source.
+					e.g. <%@ page import="java.util.*" %>
+					
+			The effect that this particular directive achieves is to introduce an import statement into the source of the generated servlet.
+			There’s a (mostly redundant) attribute for the page directive called language, to denote what kind of scripting language your JSP uses.
+			e.g.
+			<%@ page import="java.util.*" language="Java" %>
+			
+			However, it is common practice to keep one attribute per directive line:
+			
+			<%@ page import="java.util.*" %>
+			<%@ page language="Java" %>
+			
+			import: to create import statements in the generated servlet source produced by the JSP container’s translation phase.
+			
+			e.g. 
+			<%!
+			private double avgWordLength(String sentence) {
+			java.util.StringTokenizer st = new java.util.StringTokenizer(sentence, " ");
+			//... rest of method omitted
+			%>		
+					
+			By including a page directive such as the following anywhere in the JSP page source,
+			
+			<%@ page import="java.util.StringTokenizer" %>
+			
+			you can rewrite the source code in a more succinct and normal fashion:
+			<%!
+			private double avgWordLength(String sentence) {
+			StringTokenizer st = new StringTokenizer(sentence, " ");
+			//... rest of method omitted
+			%>
+			
+			There are some packages you get for free within the JSP, so it’s redundant to import them. They are these:
+			1. javax.servlet
+			2. javax.servlet.http
+			3. javax.servlet.jsp
+			
+			session: The session attribute of the page directive is used to determine whether an HttpSession object is available 
+					 within your JSP page source (if available, it’s provided through an implicit variable called session).
+					 e.g.
+					 <%@ page session="true" %> by default true.
+					 This will have the equivalent effect of writing the following servlet code:
+					 HttpSession session = request.getSession();
+					 
+			contentType: e.g.
+			
+						<%@ page contentType="image/gif" %>
+						<%@ page import="java.io.*" %>
+						<% /* response.setContentType("image/gif"); */
+						String path = getServletContext().getRealPath("tomcat.gif");
+						File imageFile = new File(path);
+						long length = imageFile.length();
+						response.setContentLength((int) length);
+						OutputStream os = response.getOutputStream();
+						BufferedInputStream bis =
+						new BufferedInputStream(new FileInputStream(imageFile));
+						int info;
+						while ((info = bis.read()) > -1) {
+						os.write(info);
+						}
+						os.flush(); %>
+					 
+			isELIgnored: the default value is "false".
+						
+						Suppose you wanted to manipulate a request attribute that is set up as follows:
+						
+						<% request.setAttribute("squareIt", new Integer(7)); %>
+						
+						To display the square of this number, you could use a scriptlet /expression combination like this later in the JSP page source:
+			
+						<% int i = ((Integer)request.getAttribute("squareIt")).intValue(); %> 
+						<%= i * i %>
+						
+						Using Expression Language, you could achieve the same result like this:
+						
+						${squareIt * squareIt}
+						
+			errorPage: e.g.
+					   <%@ page errorPage=“errorPage.jsp” %>
+					   Use errorPage to set a URL pointing to another JSP within the same web application.
+					   Should an exception occur, your users will be forwarded to this other JSP.The page 
+					   you forward to must have “isErrorPage” set to true, and is the only sort of page to 
+					   have access to the implicit variable exception.
+					   e.g.
+					   <%@ page isErrorPage=“true” %>
+					   
+			info: e.g.
+				  <%@ page info=“My Clever Hacks Page” %>
+				  
+				  Use this attribute to publish information about your JSP page, accessible through the getServletInfo() method.
+				  
+				  
+						
+2. The include Directive: one mandatory attribute (file).
+
+						  The purpose of include is to merge the contents of one JSP source fi le into another (the one doing the including). 
+						  This happens at the point where the including JSP page source goes through translation.
+						  
+						  The value you can attach to the fi le attribute is a fi lename together with its path.
+						  The path is relative—either beginning with a forward slash: “/” or not.
+						  
+						  The file type you include doesn’t have to be JSP page source, nor does it have to have a .jsp extension.
+						  
+						  A different mechanism for inclusion: the <jsp:include> standard action.
+						  The key difference between this and the include directive is that <jsp:include> executes afresh with every new
+						  request to the including JavaServer Page while the include directive happens at translation time.
+						  
+3. The taglib Directive: The taglib directive makes custom actions available in the JSP page by referencing a tag library.
+						 Every custom action you include in your JSP page must use a prefi x specifi ed in one of the taglib 
+						 directives in the page. uri gives an indication where the tag library fi le (which defi nes the custom actions)
+						 can be found.
+						 e.g.
+						 <%@ taglib prefix="mytags" uri="http://www.osborne.com/taglibs/mytags" %>
+						 
+						 
+						 
+						 
+JSP Implicit Objects:-
+======================
+
+Take a look at the source for any generated servlet.
+
+public void _jspService(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException, ServletException 
+{
+	JspFactory _jspxFactory = null;
+	PageContext pageContext = null;
+	HttpSession session = null;
+	ServletContext application = null;
+	ServletConfig config = null;
+	JspWriter out = null;
+	Object page = this;
+	JspWriter _jspx_out = null;
+	PageContext _jspx_page_context = null;
+	try 
+	{
+		_jspxFactory = JspFactory.getDefaultFactory();
+		response.setContentType("text/html");
+		pageContext = _jspxFactory.getPageContext(this,
+		request, response, null, true, 8192, true);
+		_jspx_page_context = pageContext;
+		application = pageContext.getServletContext();
+		config = pageContext.getServletConfig();
+		session = pageContext.getSession();
+		out = pageContext.getOut();
+		//... etc. rest of jspService() method
+						 
+						  
+They are just local variables declared at the outset of the _jspService() method. Because they have
+standardized names, they are available for use within your expressions and scriptlets.
+
+There are totaol eight out of the nine implicit objects. (The ninth—exception—is the exception).
+
+
+The following table lists all nine, with their types:
+
+Implicit Object Name 				Type
+====================                ===============================================
+request 							javax.servlet.http.HttpServletRequest interface
+------- 							(rarely—javax.servlet.ServletRequest)
+													
+response 							javax.servlet.http.HttpServletRequest interface
+--------							(rarely—javax.servlet.ServletResponse)
+									
+application 						javax.servlet.ServletContext interface
+-----------
+config 								javax.servlet.ServletConfig interface
+------
+session 							javax.servlet.http.HttpSession interface
+-------
+out 								javax.servlet.jsp.JspWriter abstract class
+---
+pageContext 						javax.servlet.jsp.PageContext abstract class
+-----------
+page 								java.lang.Object class
+----
+exception 							java.lang.Throwable class
+---------
+
+The only really new concepts are contained in the out and pageContext implicit objects.
+
+out is the equivalent of the PrintWriter you get from the response in normal servlets. 
+It’s not a PrintWriter, but rather another kind of Writer: javax.servlet.jsp JspWriter.
+
+pageContext is entirely new: a master controlling object for JSP pages, plays a vital role in initializing several of the other implicit objects.
+
+1. application:- The application implicit variable is an object implementing the javax.servlet.ServletContext interface.
+---------------- With it, you can save yourself the bother of defining your own context variable using scriptlet code like this:
+				
+				<% ServletContext context = this.getServletContext(); %>
+				
+				e.g. to display the name of your web application (as defi ned in the <display> element of the deployment descriptor, web.xml):
+				
+				<%= application.getServletContextName() %>
+				
+				
+2. session:- The session implicit variable is an object implementing the javax.servlet.http.HttpSession interface.
+------------ With it, you can save yourself the bother of defining your own session variable using scriptlet code like this:
+			
+			<% HttpSession mySession = request.getSession(); %>
+			
+			If u don't want this implicit variable, just make it like this:
+			<%@ page session="false" %>
+			
+3. page:- This is a reference to the JSP page object itself—in other words, the generated servlet.
+---------  The type of the variable is java.lang.Object. You can call Object methods only on page.
+		  You could safely downcast the reference within the Tomcat container like this:
+		 
+		 <%!
+		public String getServletInfo() {
+		return "My Downcast Page :-(";
+		}
+		%>
+		<% HttpServlet servlet = (HttpServlet) page; %>
+		<%= servlet.getServletInfo() %>
+			
+		It might not be safe to cast page to an HttpServlet reference variable in all JSP container environments:
+		java.lang.Object is the only safe choice for the page reference variable! 
+		You could equally well substitute the following for the last two lines of the above mini-JSP:
+		
+		<%= this.getServletInfo() %>
+		Or, of course, just:
+		<%= getServletInfo() %>
+		
+4. config:- You may never have to use it.
+----------- The only practical reason for using the confi g object, which implements javax.servlet.ServletConfig, is to get hold 
+		    of initialization parameters associated with the JSP page. If there are any, they will be in the deployment descriptor, 
+		    as <init-param> elements associated with the <servlet> element for this JSP page.
+		   
+		   
+5. pageContext:- This will be your JSP container’s implementation of the javax.servlet.jsp.PageContext abstract class, which in turn
+---------------- inherits from the java.servlet.jsp.JspContext class.
+				
+				pageContext provides a mechanism for handling exceptions on a page, and forwarding to another page.
+				The pageContext object knows about all the other implicit objects, and it has methods to get hold of them.
+				
+				Most usefully, pageContext provides a new scope for attributes: page scope.
+				
+				You’ve encountered three sorts of attributes already, here listed from most local to most global:
+				1. Request attributes
+				2. Session attributes
+				3. Context attributes
+				
+				It has methods to access attributes in its own page scope.
+				However, pageContext also gives access to attributes in any 
+				scope, using slightly modified versions of the get, set, and removeAttribute() methods.
+				
+				
+6. out:- The out implicit variable represents a writer associated with the response for your JSP page.
+-------- The main thing that JspWriter gives you is buffering.
+		
+7. exception
+-------------
+

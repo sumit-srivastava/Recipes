@@ -1,0 +1,47 @@
+<web-app>
+	<description>	
+	<display-name>	
+	<icon>			
+	<distributable>
+	<context-param>
+	<filter>
+	<filter-mapping>
+	<listener>
+	<servlet>
+	<servlet-mapping>
+	<session-config>
+	<mime-mapping>
+	<welcome-file-list>
+	<error-page>
+	<jsp-config>
+	<security-constraint>
+	<login-config>
+	<security-role>
+	
+	
+	
+	<env-entry>
+	<ejb-ref>
+	<ejb-local-ref>
+	<service-ref>
+	<resource-ref>
+	<resource-env-ref>
+	<message-destination-ref>
+	<locale-encoding-mapping-list>
+</web-app>
+
+
+Subparts:
+
+<servlet>
+	<description> 	0 or many
+	<display-name> 	0 or many
+	<icon>			0 or many
+		<small-icon> 0 or 1
+		<large-icon> 0 or 1
+	<servlet-name>	Always 1
+	<servlet-class> OR <jsp-file>	Always 1
+	<init-param>	0 or many
+		<description> 0 or 1
+		<param-name>  Always 1
+		<param-value> Always 1
