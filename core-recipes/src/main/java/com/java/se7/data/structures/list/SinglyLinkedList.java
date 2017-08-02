@@ -25,6 +25,7 @@ public class SinglyLinkedList<E> {
         public E getElement() {
             return element;
         }
+
         public void setElement(E element) {
             this.element = element;
         }
@@ -54,13 +55,14 @@ public class SinglyLinkedList<E> {
     /*
      * constructs an initially empty list
      */
-    public SinglyLinkedList() { }
+    public SinglyLinkedList() {
+    }
 
     public int size() {
         return size;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return size == 0;
     }
 
@@ -85,7 +87,7 @@ public class SinglyLinkedList<E> {
         size++;
     }
 
-    public  void addLast(E e) {
+    public void addLast(E e) {
         Node<E> newest = new Node<>(e, null);
         if (isEmpty())
             head = newest;
@@ -122,18 +124,9 @@ public class SinglyLinkedList<E> {
         if (size() < 2)
             return;
         else {
-            Node<E> secondNode = head.getNext();
-            Node<E> thirdNode = secondNode.getNext();
-
+            Node<E> currNode = head.getNext();
             head.setNext(null);
-            secondNode.setNext(head);
-
-            if (thirdNode == null) {
-                return;
-            }
-
-            Node<E> prevNode = secondNode;
-            Node<E> currNode = thirdNode;
+            Node<E> prevNode = head;
             Node<E> nextNode;
 
             while (currNode != null) {
@@ -143,6 +136,7 @@ public class SinglyLinkedList<E> {
                 prevNode = currNode;
                 currNode = nextNode;
             }
+            tail = head;
             head = prevNode;    // prevNode, already pointing next to null
         }
 
@@ -161,22 +155,27 @@ public class SinglyLinkedList<E> {
 
     public static void main(String[] args) {
         SinglyLinkedList<Integer> list = new SinglyLinkedList<Integer>();
-        for (int i=0;i<20;i++) {
-            list.addFirst(i + 1);
+        for (int i = 0; i < 20; i++) {
+            list.addLast(i + 1);
         }
         Node<Integer> node1 = list.head;
-        for (int i=0;i<20;i++) {
-            System.out.print(node1.getElement()+", ");
+        System.out.println("\n Head Element: " + list.first());
+        System.out.println("\n Tail Element: " + list.last());
+        for (int i = 0; i < 20; i++) {
+            System.out.print(node1.getElement() + ", ");
             node1 = node1.getNext();
         }
         System.out.println("\n" + list.findNthToLast(1));
 
-        list.reverseListRecursively();
+        list.reverseListIteratively();
+//        list.reverseListRecursively();
         Node<Integer> node2 = list.head;
-        for (int i=0;i<20;i++) {
-            System.out.print(node2.getElement()+", ");
+        for (int i = 0; i < 20; i++) {
+            System.out.print(node2.getElement() + ", ");
             node2 = node2.getNext();
         }
+        System.out.println("\n Head Element After Reverse: " + list.first());
+        System.out.println("\n Tail Element After Reverse: " + list.last());
     }
 
 
@@ -194,7 +193,7 @@ public class SinglyLinkedList<E> {
         Node<E> fastPtr = head;
         Node<E> slowPtr = head;
         while (fastPtr != null && fastPtr.getNext() != null) {
-            fastPtr =fastPtr.getNext().getNext();
+            fastPtr = fastPtr.getNext().getNext();
             slowPtr = slowPtr.getNext();
             if (slowPtr == fastPtr)
                 return true;

@@ -3,7 +3,6 @@ package com.java.se7.pattern.recipes.builder;
 /**
  * Person class used as part of too many parameters demonstration.
  * 
- * @author Dustin
  */
 public class Person
 {

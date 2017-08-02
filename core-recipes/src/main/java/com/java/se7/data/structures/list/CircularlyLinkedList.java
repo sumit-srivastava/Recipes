@@ -24,6 +24,7 @@ public class CircularlyLinkedList<E> {
         public E getElement() {
             return element;
         }
+
         public void setElement(E element) {
             this.element = element;
         }
@@ -49,13 +50,14 @@ public class CircularlyLinkedList<E> {
     /*
      * constructs an initially empty list
      */
-    public CircularlyLinkedList() { }
+    public CircularlyLinkedList() {
+    }
 
     public int size() {
         return size;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return size == 0;
     }
 
@@ -74,7 +76,7 @@ public class CircularlyLinkedList<E> {
     }
 
     /**
-     *  rotate the first element to the back of the list
+     * rotate the first element to the back of the list
      */
     public void rotate() {
         if (tail != null)

@@ -29,6 +29,7 @@ public class DoublyLinkedList<E> {
         public E getElement() {
             return element;
         }
+
         public void setElement(E element) {
             this.element = element;
         }
@@ -51,11 +52,11 @@ public class DoublyLinkedList<E> {
     }
 
     /*
-     * header sentinel
+     * header sentinel: it doesn't contain element.
      */
     private Node<E> header;
     /*
-     * trailer sentinel
+     * trailer sentinel: it doesn't contain element.
      */
     private Node<E> trailer;
     /*
@@ -79,7 +80,7 @@ public class DoublyLinkedList<E> {
         return size;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return size == 0;
     }
 
@@ -117,7 +118,7 @@ public class DoublyLinkedList<E> {
         addBetween(e, header, header.getNext());
     }
 
-    public  void addLast(E e) {
+    public void addLast(E e) {
         addBetween(e, trailer.getPrev(), trailer);
     }
 
